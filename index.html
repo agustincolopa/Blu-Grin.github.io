@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blu&Grin — Auditoría y BLU Núcleo</title>
+  <meta name="description" content="Blu&Grin: análisis local y automejora de código Python. Integra flake8, mypy, bandit, radon, pylint, vulture, isort, black y dodgy en un único reporte." />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-1: #071026;
+      --bg-2: #12022b;
+      --glass: rgba(255, 255, 255, 0.04);
+      --neon-blue: #5ee0ff;
+      --neon-violet: #9b5cff;
+      --neon-green: #25ffb0;
+      --neon-fuccia: #ff47b0;
+      --neon-red: #ff6b6b;
+      --muted: #cbd5e1;
+      --card-grad: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: Orbitron, Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--muted);
+      background: radial-gradient(800px 600px at 10% 10%, rgba(81, 62, 255, 0.06), transparent),
+                  linear-gradient(180deg, var(--bg-1), var(--bg-2));
+      overflow-x: hidden;
+    }
+
+    /* layout */
+    .wrap {
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .logo {
+      width: 84px;
+      height: 84px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+      background: conic-gradient(from 180deg, var(--neon-violet), var(--neon-blue), var(--neon-fuccia));
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      color: #041026;
+    }
+
+    h1 {
+      font-size: 30px;
+      color: var(--neon-blue);
+      text-shadow: 0 6px 30px rgba(94, 224, 255, 0.08);
+    }
+
+    .subtitle {
+      color: #d8e6ff;
+      margin-top: 6px;
+      max-width: 780px;
+    }
+
+    /* hero */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card-grad);
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      box-shadow: 0 12px 40px rgba(2, 6, 23, 0.6);
+    }
+
+    .kicker {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--neon-fuccia);
+      font-weight: 800;
+    }
+
+    .lead {
+      color: #eaf2ff;
+    }
+
+    ul.badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .cta {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-violet));
+      color: #021026;
+      box-shadow: 0 10px 30px rgba(94, 224, 255, 0.06);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+    }
+
+    /* grid blocks */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .section-title {
+      color: #fff;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    /* how-to big block */
+    .howto {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+    }
+
+    pre {
+      background: rgba(0, 0, 0, 0.45);
+      padding: 12px;
+      border-radius: 8px;
+      color: var(--neon-blue);
+      overflow: auto;
+    }
+
+    /* pro & ultra */
+    .pro {
+      border-left: 4px solid var(--neon-violet);
+    }
+
+    .ultra {
+      background: linear-gradient(90deg, rgba(255, 71, 176, 0.08), rgba(37, 255, 176, 0.04));
+      border: 1px solid rgba(255, 71, 176, 0.08);
+      box-shadow: 0 10px 30px rgba(255, 71, 176, 0.03);
+    }
+
+    .ultra .tag {
+      background: linear-gradient(90deg, var(--neon-fuccia), var(--neon-green));
+      color: #021026;
+    }
+
+    /* counters and small UI */
+    .stats {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 800;
+    }
+
+    /* modal */
+    .modal-back {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+    }
+
+    .modal {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      padding: 18px;
+      border-radius: 12px;
+      width: 420px;
+    }
+
+    .input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: 10px;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    /* footer */
+    footer {
+      margin-top: 26px;
+      padding: 18px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* responsive */
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* particles canvas */
+    canvas#particles {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+    }
+
+    /* entrance animation */
+    [data-anim] {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease;
+    }
+
+    [data-anim].visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* neon badges */
+    .badge .txt {
+      font-weight: 700;
+      color: #eaf6ff;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <div class="wrap">
+    <header data-anim>
+      <div class="logo">B&amp;G</div>
+      <div>
+        <h1>Blu&amp;Grin</h1>
+        <p class="subtitle">Análisis, diagnóstico y automejora de código Python — privacidad total, resultados inteligentes.</p>
+      </div>
+    </header>
+
+    <main>
+      <div class="hero" data-anim>
+        <div class="card">
+          <div class="kicker">SOLUCIÓN LOCAL · PRIVACIDAD TOTAL</div>
+          <h2 class="lead">
+            Blu&Grin es una herramienta <strong>gratuita</strong> que combina en un solo reporte múltiples analizadores de Python:
+            Flake8, Mypy, Bandit, Radon, Pylint, Vulture, Isort, Black y Dodgy.
+            Analiza, resume y prioriza los resultados para darte un diagnóstico técnico completo y accionable.
+          </h2>
+          <ul class="badges" aria-hidden>
+            <li class="badge"><span class="dot" style="background: var(--neon-blue)"></span><span class="txt">Flake8</span></li>
+            <li class="badge"><span class="dot" style="background: var(--neon-violet)"></span><span class="txt">Mypy</span></li>
+            <li class="badge"><span class="dot" style="background: var(--neon-red)"></span><span class="txt">Bandit</span></li>
+            <li class="badge"><span class="dot" style="background: var(--neon-green)"></span><span class="txt">Radon</span></li>
+            <li class="badge"><span class="dot" style="background: var(--neon-fuccia)"></span><span class="txt">Pylint</span></li>
+            <li class="badge">
+              <span class="dot" style="background: linear-gradient(90deg, var(--neon-blue), var(--neon-violet))"></span>
+              <span class="txt">Vulture/Isort/Black/Dodgy</span>
+            </li>
+          </ul>
+          <div class="cta">
+            <button class="btn btn-primary" onclick="document.getElementById('download-demo').scrollIntoView({behavior:'smooth'})">Probar demo gratuita</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('usar').scrollIntoView({behavior:'smooth'})">Ver Cómo Usar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <div>
+              <div style="font-weight: 900; color: #fff; font-size: 18px">Versión actual</div>
+              <div style="color: #a7b7d9; margin-top: 6px">GRIN Mirror — análisis, scoring y reportes</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+              <div class="stats">
+                <div class="stat">Descargas demo: <span id="count-downloads">0</span></div>
+                <div class="stat">Compras Pro: <span id="count-pros">0</span></div>
+              </div>
+              <div class="tag" style="margin-top: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.06); font-weight: 800; color: var(--neon-violet)">Beta</div>
+            </div>
+          </div>
+          <div style="margin-top: 12px; color: #dbeafe">
+            <strong>Salida rápida:</strong>
+            <ul style="margin-top: 8px; color: #cbd5e1">
+              <li>JSON consolidado | TXT legible | Consola con resumen</li>
+              <li>Puntaje global y detalle por herramienta</li>
+              <li>Integración simple con CI y pipelines</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRID: How it works + Pro + Ultra -->
+      <div class="grid" data-anim>
+        <div class="card">
+          <div class="section-title">¿Cómo funciona (en pocas palabras)?</div>
+          <p>
+            Blu&Grin ejecuta los analizadores locales más confiables y consolida los resultados en un único reporte con puntaje y sugerencias.
+            Ideal para startups y equipos que necesitan visibilidad rápida sobre calidad, seguridad y mantenibilidad.
+          </p>
+          <ol style="margin-top: 10px; color: #cbd5e1">
+            <li><strong>Revisa:</strong> ejecuta linters y analizadores en tu código.</li>
+            <li><strong>Resume:</strong> agrupa hallazgos en un reporte estructurado con puntaje.</li>
+            <li><strong>Propone:</strong> BLU Núcleo sugiere cambios, refactors y prototipos.</li>
+          </ol>
+          <div style="margin-top: 10px; color: #dbeafe">
+            Funciona localmente: tu código nunca se sube a la nube por defecto.
+          </div>
+        </div>
+
+        <div class="card pro">
+          <div class="section-title">Versión Pro — BLU Núcleo</div>
+          <p>
+            BLU Núcleo interpreta el reporte de Mirror y genera sugerencias avanzadas, prioriza módulos y propone prototipos tipados y seguros.
+          </p>
+          <ul style="color: #cbd5e1; margin-top: 8px;">
+            <li>Sugerencias avanzadas y refactors propuestos.</li>
+            <li>Prioridad automática de módulos críticos.</li>
+            <li>Generación de prototipos y pruebas mínimas sugeridas.</li>
+          </ul>
+          <p style="margin-top: 12px; color: var(--neon-blue)">
+            <strong>Precios:</strong> Pro Básica — <strong>5 USD</strong> · Pro Visual+IA — <strong>10 USD</strong>
+          </p>
+          <p style="color: #ffd166">
+            Forma de pago actual: transferencia/alias Lemon: <strong>agus.colo23</strong>.
+            Enviá comprobante a <strong>blumasgrin@gmail.com</strong> con tu nombre y correo para recibir acceso.
+          </p>
+          <div style="display: flex; gap: 8px; margin-top: 10px">
+            <button class="btn btn-primary" onclick="openProModal()">Enviar comprobante y solicitar acceso</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('usar').scrollIntoView({behavior:'smooth'})">Ver guía de uso</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ULTRA -->
+      <div class="card ultra" style="margin-top: 18px" data-anim>
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <div>
+            <h3 style="color: #fff; margin-bottom: 8px">Versión Ultra (Próximamente)</h3>
+            <p style="color: #dbeafe">
+              Próximo lanzamiento: una capa autónoma y autoevolutiva que aprenderá de tus decisiones y adaptará su propio núcleo con controles de seguridad y auditoría humana.
+            </p>
+          </div>
+          <div class="tag" style="padding: 8px 12px; border-radius: 12px; font-weight: 900; color: #021026; background: linear-gradient(90deg, var(--neon-fuccia), var(--neon-green))">
+            PRÓXIMAMENTE
+          </div>
+        </div>
+      </div>
+
+      <!-- HOW TO / DOWNLOAD -->
+      <section id="usar" class="howto card" data-anim>
+        <div class="section-title">🚀 CÓMO USAR BLU&amp;GRIN</div>
+        <p>Descargá el paquete demo y seguí estos pasos para correr GRIN Mirror localmente.</p>
+        <ol style="color: #cbd5e1; margin-top: 12px;">
+          <li>
+            <strong>Descargar el paquete demo (incluye configuraciones y README):</strong>
+            <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center">
+              <button id="download-demo" class="btn btn-primary" onclick="downloadBundle()">📦 Descargar demo completa (ZIP)</button>
+              <div class="stat">Descargas: <span id="dl-count">0</span></div>
+            </div>
+          </li>
+          <li style="margin-top: 12px">
+            <strong>Crear y activar un venv</strong>
+            <pre>Linux / macOS: python3 -m venv .venv
+source .venv/bin/activate
+
+Windows (PowerShell): python -m venv .venv
+.\.venv\Scripts\Activate.ps1</pre>
+          </li>
+          <li style="margin-top: 12px">
+            <strong>Instalar dependencias</strong>
+            <pre>pip install --upgrade pip
+pip install tqdm colorama flake8 mypy bandit radon pylint vulture isort black dodgy</pre>
+          </li>
+          <li style="margin-top: 12px">
+            <strong>Ejecutar el análisis</strong>
+            <pre>python grin_mirror2.py ejemplo.py
+# o para analizar todos los .py del directorio:
+python grin_mirror2.py</pre>
+          </li>
+          <li style="margin-top: 12px">
+            <strong>Leer los reportes</strong>
+            <p>Los JSON se guardan en <code>analisisconsolidados/</code> y los TXT legibles en <code>analisisreport/</code>.</p>
+          </li>
+        </ol>
+        <p style="margin-top: 10px; color: #ffd166">
+          Nota: Blu&Grin une herramientas como Flake8, Mypy, Bandit y Radon en un único reporte consolidado para darte un diagnóstico técnico completo en segundos.
+        </p>
+      </section>
+
+      <!-- CONTACT / SOBRE MI -->
+      <section id="contacto" class="card" style="margin-top: 18px" data-anim>
+        <div style="display: flex; gap: 14px; align-items: flex-start">
+          <div style="width: 110px; height: 110px; border-radius: 14px; background: linear-gradient(135deg, var(--neon-violet), var(--neon-blue)); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #021026; font-size: 22px">
+            CO
+          </div>
+          <div>
+            <div class="section-title">Sobre el autor — Agustín (Colo)</div>
+            <p style="color: #dbeafe">
+              Hola, soy Agustín (Colo). No programaba hace años; empecé hace 6 meses con GRIN Mirror guiado por LLMs y lo transformé en Blu&Grin:
+              una herramienta enfocada en privacidad, automatización y mejora continua para equipos y startups.
+            </p>
+            <p style="color: #cbd5e1">
+              Contacto: <a href="mailto:blumasgrin@gmail.com" style="color: var(--neon-blue)">blumasgrin@gmail.com</a>
+            </p>
+            <p style="color: #cbd5e1">
+              Alias de pago (Lemon): <strong>agus.colo23</strong> — Para acceder a la versión Pro, realizá el pago y enviá el comprobante a
+              <strong>blumasgrin@gmail.com</strong> con tu nombre y correo. El equipo revisará el pago y habilitará el acceso manualmente.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="micro">Blu&Grin · Concept & Build by Agustín (Colo)</div>
+      <div class="micro">© <span id="year"></span> · contacto: blumasgrin@gmail.com · alias Lemon: agus.colo23</div>
+    </footer>
+  </div>
+
+  <!-- MODAL: enviar comprobante -->
+  <div id="modal" class="modal-back" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3 style="color: var(--neon-violet)">Enviar comprobante de pago</h3>
+      <p style="color: #dbeafe">
+        Completá tus datos y adjuntá el comprobante. Luego enviá el comprobante por correo a <strong>blumasgrin@gmail.com</strong>.
+      </p>
+      <input id="pname" class="input" placeholder="Nombre completo" />
+      <input id="pemail" class="input" placeholder="Correo electrónico" />
+      <label style="color: #cbd5e1; margin-top: 8px">Adjuntar comprobante (imagen/pdf)</label>
+      <input id="pproof" type="file" class="input" accept="image/*,.pdf" />
+      <div style="display: flex; gap: 8px; margin-top: 12px">
+        <button class="btn btn-primary" onclick="submitProof()">Enviar y solicitar acceso</button>
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      </div>
+      <p id="modal-note" style="color: #9fb7e6; margin-top: 10px; font-size: 13px"></p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script>
+    // particles
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    const parts = [];
+    for (let i = 0; i < 120; i++) {
+      parts.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.6 + 0.3,
+        dx: (Math.random() - 0.5) * 0.4,
+        dy: (Math.random() - 0.5) * 0.4,
+        color: `hsl(${200 + Math.random() * 160}, 90%, 60%)`
+      });
+    }
+
+    function anim() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p of parts) {
+        ctx.beginPath();
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = 0.8;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+      }
+      requestAnimationFrame(anim);
+    }
+    anim();
+
+    // entrance animations
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('[data-anim]').forEach(el => obs.observe(el));
+
+    // counters in localStorage
+    const dlKey = 'bg_dl_count';
+    const proKey = 'bg_pro_count';
+
+    function loadCounts() {
+      const dl = Number(localStorage.getItem(dlKey) || 0);
+      const pr = Number(localStorage.getItem(proKey) || 0);
+      document.getElementById('dl-count').innerText = dl;
+      document.getElementById('count-downloads').innerText = dl;
+      document.getElementById('count-pros').innerText = pr;
+      document.getElementById('dl-count').dataset.value = dl;
+    }
+
+    function incDl() {
+      const n = Number(localStorage.getItem(dlKey) || 0) + 1;
+      localStorage.setItem(dlKey, n);
+      loadCounts();
+    }
+
+    function incPro() {
+      const n = Number(localStorage.getItem(proKey) || 0) + 1;
+      localStorage.setItem(proKey, n);
+      loadCounts();
+    }
+
+    loadCounts();
+
+    // ✅ NUEVA FUNCIÓN: Descarga embebida (todo en un solo archivo)
+    async function downloadBundle() {
+      const zip = new JSZip();
+
+      // Contenido de los archivos embebidos
+      const files = {
+        'grin_mirror2.py': `"""
+################################################################################
+GRIN Mirror v4.1.0
+################################################################################
+Análisis estático de código Python con reportes detallados y autogestión de
+dependencias.
+
+Novedades v4.1.0:
+ - Verificación e instalación automática de dependencias al inicio.
+
+Herramientas Integradas:
+ - flake8, mypy, bandit, radon, pylint, vulture, isort, black, dodgy.
+
+Salida:
+ - JSON detallado (para BLU Núcleo y sistemas automáticos)
+ - TXT con reporte completo y legible para humanos
+ - Consola: logs en vivo + JSON + resumen final
+################################################################################
+"""
+
+import os
+import sys
+import json
+import subprocess
+import logging
+import hashlib
+import codecs
+import argparse
+import io
+import importlib.util
+from datetime import datetime
+from logging.handlers import RotatingFileHandler
+
+# --- GESTIÓN DE DEPENDENCIAS ---
+# Esta sección se ejecuta ANTES de cualquier import externo.
+
+REQUIRED_PACKAGES = [
+    "tqdm", "colorama", "flake8", "mypy", "bandit", "radon", "pylint",
+    "vulture", "isort", "black", "dodgy"
+]
+
+def verificar_e_instalar_dependencias():
+    """
+    Comprueba si los paquetes requeridos están instalados.
+    Si no lo están, intenta instalarlos usando pip.
+    """
+    print("--- Verificando dependencias de GRIN Mirror ---")
+    missing_packages = []
+    for package in REQUIRED_PACKAGES:
+        spec = importlib.util.find_spec(package)
+        if spec is None:
+            missing_packages.append(package)
+
+    if not missing_packages:
+        print("✅ Todas las dependencias están instaladas.")
+        return True
+
+    print(f"⚠️ Dependencias faltantes detectadas: {', '.join(missing_packages)}")
+    print("Intentando instalar automáticamente...")
+
+    try:
+        # Usamos sys.executable para garantizar que usamos el pip del intérprete correcto
+        command = [sys.executable, "-m", "pip", "install"] + missing_packages
+        print(f"Ejecutando: {' '.join(command)}")
+        
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+        print("✅ Dependencias instaladas con éxito.")
+        print("\\nPor favor, ejecuta el script nuevamente para continuar con el análisis.")
+        sys.exit(0) # Salimos para que el usuario pueda re-ejecutar.
+
+    except subprocess.CalledProcessError as e:
+        print("\\n❌ Error al instalar las dependencias:", file=sys.stderr)
+        print(e.stderr, file=sys.stderr)
+        print("\\nPor favor, instala los paquetes manualmente e intenta de nuevo:")
+        print(f"pip install {' '.join(missing_packages)}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print("\\n❌ Error: 'pip' no fue encontrado. Asegúrate de que Python y pip están en tu PATH.", file=sys.stderr)
+        sys.exit(1)
+
+# Ejecutamos la verificación
+verificar_e_instalar_dependencias()
+
+# --- IMPORTS EXTERNOS ---
+# Ahora que las dependencias están garantizadas, podemos importarlas.
+from tqdm import tqdm
+from colorama import init
+
+init(autoreset=True)
+
+# --- Constantes y Directorios ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ANALYSIS_DIR = os.path.join(BASE_DIR, "analisisconsolidados")
+REPORT_TXT_DIR = os.path.join(BASE_DIR, "analisisreport")
+os.makedirs(ANALYSIS_DIR, exist_ok=True)
+os.makedirs(REPORT_TXT_DIR, exist_ok=True)
+
+# --- Logging con Buffer en Memoria ---
+LOG_BUFFER = io.StringIO()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        RotatingFileHandler("grin_mirror.log", maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"),
+    ],
+)
+buffer_handler = logging.StreamHandler(LOG_BUFFER)
+buffer_handler.setLevel(logging.INFO)
+buffer_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+logger = logging.getLogger("GRIN.Mirror")
+logger.addHandler(buffer_handler)
+
+# --- Mapeo de Explicaciones Pylint ---
+PYLINT_MAP = {
+    "C0114": "Archivo sin docstring. Añadir una descripción global.",
+    "C0115": "Clase sin docstring. Documenta objetivo y atributos.",
+    "C0116": "Función sin docstring. Explica parámetros y retorno.",
+    "W0611": "Import no usado. Puedes eliminarlo.",
+    "W0613": "Argumento no usado. Retirarlo o usarlo.",
+    "W0718": "Captura Exception genérico. Usa una excepción más específica.",
+    "R1705": "elif innecesario después de return. Simplifica el flujo.",
+    "C0411": "Orden incorrecto de imports (std → terceros → locales).",
+    "C0415": "Import fuera del toplevel. Moverlo al inicio del archivo.",
+    "R0903": "Clase con pocos métodos públicos. Considera usar un dataclass o una función.",
+}
+
+# --- Funciones Utilitarias ---
+def leer_lineas(archivo: str):
+    try:
+        with codecs.open(archivo, "r", encoding="utf-8", errors="ignore") as f:
+            return f.readlines()
+    except Exception as e:
+        logger.error(f"No se pudo leer el archivo {archivo}: {e}")
+        return []
+
+def obtener_snippet(archivo: str, linea: int, contexto: int = 2):
+    lineas = leer_lineas(archivo)
+    if not lineas or not (0 < linea <= len(lineas)):
+        return []
+    
+    out = []
+    start = max(0, linea - contexto - 1)
+    end = min(len(lineas), linea + contexto)
+    
+    for i in range(start, end):
+        prefix = ">>" if i + 1 == linea else "  "
+        out.append(f"{prefix} {i+1:4}: {lineas[i].rstrip()}")
+    return out
+
+def calcular_hash_sha256(archivo: str):
+    try:
+        with open(archivo, "rb") as f:
+            return hashlib.sha256(f.read()).hexdigest()
+    except Exception as e:
+        logger.error(f"No se pudo calcular el hash de {archivo}: {e}")
+        return ""
+
+def ejecutar_comando(cmd, timeout=40):
+    logger.info(f"Ejecutando: {' '.join(cmd)}")
+    try:
+        resultado = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, encoding='utf-8', errors='ignore')
+        return {"stdout": resultado.stdout.strip(), "stderr": resultado.stderr.strip(), "ok": resultado.returncode == 0, "code": resultado.returncode}
+    except subprocess.TimeoutExpired:
+        logger.error(f"Timeout ejecutando: {' '.join(cmd)}")
+        return {"stdout": "", "stderr": "Comando excedió el tiempo límite de ejecución.", "ok": False, "code": -1}
+    except Exception as e:
+        logger.error(f"Error inesperado ejecutando {' '.join(cmd)}: {e}")
+        return {"stdout": "", "stderr": str(e), "ok": False, "code": -1}
+
+# --- Módulos de Análisis (Sin cambios, el código de las funciones de análisis va aquí) ---
+def analizar_flake8(archivo):
+    res = ejecutar_comando(["flake8", archivo, "--max-line-length=120", "--format=%(row)d:%(col)d:%(code)s:%(text)s"])
+    detalles = []
+    if res["stdout"]:
+        for ln in res["stdout"].splitlines():
+            try:
+                row, col, code, text = ln.split(":", 3)
+                linea_num = int(row)
+                detalles.append({
+                    "linea": linea_num, "columna": int(col),
+                    "codigo": code.strip(), "descripcion": text.strip(),
+                    "sugerencia_simple": "Corregir el estilo del código para cumplir con PEP8.",
+                    "explicacion": "El código no sigue las convenciones de estilo de Python (PEP8).",
+                    "impacto": "bajo", "snippet": obtener_snippet(archivo, linea_num)
+                })
+            except ValueError:
+                logger.warning(f"No se pudo parsear la línea de flake8: {ln}")
+    return {"detalles": detalles, "score": max(0, 100 - len(detalles) * 5), "conteo": len(detalles)}
+
+def analizar_mypy(archivo):
+    res = ejecutar_comando(["mypy", "--config-file", os.path.join(BASE_DIR, "mypy.ini"), archivo])
+    detalles = []
+    if res["stdout"]:
+        for line in res["stdout"].splitlines():
+            if "error:" in line and "Success" not in line:
+                parts = line.split(":")
+                if len(parts) >= 4:
+                    row_str, col_str, msg = parts[1], parts[2], ":".join(parts[3:])
+                    linea_num = int(row_str) if row_str.strip().isdigit() else 0
+                    detalles.append({
+                        "linea": linea_num, "columna": int(col_str) if col_str.strip().isdigit() else 0,
+                        "descripcion": msg.strip(), "sugerencia_simple": "Agregar o corregir anotaciones de tipo.",
+                        "explicacion": "Mypy detectó una inconsistencia o ausencia de tipos estáticos.",
+                        "impacto": "medio", "snippet": obtener_snippet(archivo, linea_num) if linea_num > 0 else []
+                    })
+    return {"detalles": detalles, "conteo": len(detalles)}
+
+def analizar_bandit(archivo):
+    res = ejecutar_comando(["bandit", "-c", os.path.join(BASE_DIR, "bandit.yaml"), "-f", "json", "-q", archivo])
+    vulns = []
+    if res["stdout"]:
+        try:
+            data = json.loads(res["stdout"])
+            for v in data.get("results", []):
+                linea_num = v.get("line_number", 0)
+                vulns.append({
+                    "linea": linea_num, "descripcion": v.get("issue_text", ""),
+                    "severity": v.get("issue_severity", "UNKNOWN"), "confidence": v.get("issue_confidence", "UNKNOWN"),
+                    "sugerencia_simple": "Revisar el patrón de código y validar entradas para mitigar el riesgo.",
+                    "explicacion": "Bandit detectó un patrón de código que podría ser una vulnerabilidad de seguridad.",
+                    "impacto": "critico" if v.get("issue_severity") == "HIGH" else "medio",
+                    "snippet": obtener_snippet(archivo, linea_num) if linea_num else []
+                })
+        except json.JSONDecodeError:
+            logger.error("Error al decodificar la salida JSON de Bandit.")
+    return {"detalles": vulns, "conteo": len(vulns)}
+
+def analizar_radon(archivo):
+    cc_res = ejecutar_comando(["radon", "cc", "-j", archivo])
+    mi_res = ejecutar_comando(["radon", "mi", "-j", archivo])
+    complejidad, mantenibilidad = 0, 100
+    try:
+        if cc_res["stdout"]:
+            cc_data = json.loads(cc_res["stdout"]).get(archivo, [])
+            if cc_data:
+                complejidad = max((f.get("complexity", 0) for f in cc_data), default=0)
+        if mi_res["stdout"]:
+            mantenibilidad = json.loads(mi_res["stdout"]).get(archivo, {}).get("mi", 100)
+    except json.JSONDecodeError:
+        logger.error("Error al decodificar la salida JSON de Radon.")
+    return {"complejidad": complejidad, "mantenibilidad": mantenibilidad,
+            "sugerencia_simple": "Refactorizar funciones o métodos largos y complejos en unidades más pequeñas.",
+            "explicacion": "Radon mide la complejidad ciclomática (CC) y el índice de mantenibilidad (MI).",
+            "impacto": "medio" if complejidad > 10 or mantenibilidad < 65 else "bajo"}
+
+def analizar_pylint(archivo):
+    res = ejecutar_comando(["pylint", "--rcfile", os.path.join(BASE_DIR, ".pylintrc"), archivo, "-f", "json"])
+    issues = []
+    if res["stdout"]:
+        try:
+            data = json.loads(res["stdout"])
+            for e in data:
+                code, linea_num = e.get("message-id", ""), e.get("line", 0)
+                issues.append({
+                    "linea": linea_num, "columna": e.get("column", 0),
+                    "descripcion": e.get("message"), "codigo": code, "symbol": e.get("symbol"),
+                    "sugerencia_simple": PYLINT_MAP.get(code, "Corregir según la recomendación de Pylint."),
+                    "explicacion": PYLINT_MAP.get(code, "Pylint detectó una posible mejora o error en el código."),
+                    "impacto": "medio" if code.startswith(("W", "R")) else "bajo",
+                    "snippet": obtener_snippet(archivo, linea_num) if linea_num else []
+                })
+        except json.JSONDecodeError:
+            logger.error("Error al decodificar la salida JSON de Pylint.")
+    return {"detalles": issues, "conteo": len(issues)}
+
+def analizar_vulture(archivo):
+    res = ejecutar_comando(["vulture", archivo, "--min-confidence", "80", "--json"])
+    unused = []
+    if res["stdout"]:
+        try:
+            data = json.loads(res["stdout"]).get("items", [])
+            for v in data:
+                linea_num = v.get("lineno")
+                unused.append({
+                    "linea": linea_num, "descripcion": v.get("message", "Posible código muerto detectado."),
+                    "sugerencia_simple": "Verificar si el código está realmente en desuso antes de eliminarlo.",
+                    "explicacion": "Vulture ha identificado código que parece no tener referencias en el proyecto.",
+                    "impacto": "bajo", "snippet": obtener_snippet(archivo, linea_num) if linea_num else []
+                })
+        except json.JSONDecodeError:
+            logger.error("Error al decodificar la salida JSON de Vulture.")
+    return {"detalles": unused, "conteo": len(unused)}
+
+def analizar_isort(archivo):
+    res = ejecutar_comando(["isort", "--check", "--diff", archivo])
+    detalles = []
+    if not res["ok"]: # isort devuelve error si hay que ordenar
+        detalles.append({
+            "linea": 0, "descripcion": "Los imports no están ordenados correctamente.",
+            "sugerencia_simple": "Ejecutar 'isort .' en la raíz del proyecto para ordenarlos automáticamente.",
+            "explicacion": "isort asegura que los imports sigan un orden estándar, mejorando la legibilidad.",
+            "impacto": "bajo", "snippet": []
+        })
+    return {"detalles": detalles, "conteo": len(detalles)}
+
+def analizar_black(archivo):
+    res = ejecutar_comando(["black", "--check", "--diff", archivo])
+    detalles = []
+    if not res["ok"]: # black devuelve error si hay que formatear
+        detalles.append({
+            "linea": 0, "descripcion": "El archivo no cumple con el formato de 'black'.",
+            "sugerencia_simple": "Ejecutar 'black .' en la raíz del proyecto para formatear el código.",
+            "explicacion": "'black' es un formateador de código dogmático que garantiza un estilo consistente.",
+            "impacto": "bajo", "snippet": []
+        })
+    return {"detalles": detalles, "conteo": len(detalles)}
+
+def analizar_dodgy(archivo):
+    res = ejecutar_comando(["dodgy", "-i", "passwords,git", archivo])
+    detalles = []
+    if res["stdout"]:
+        for line in res["stdout"].splitlines():
+            parts = line.split(":")
+            if len(parts) >= 3:
+                linea_num, col_num, msg = int(parts[1]), int(parts[2]), ":".join(parts[3:])
+                detalles.append({
+                    "linea": linea_num, "columna": col_num,
+                    "descripcion": msg.strip(),
+                    "sugerencia_simple": "Revisar si se ha filtrado información sensible o secreta.",
+                    "explicacion": "Dodgy busca patrones de código sospechosos como claves API o contraseñas.",
+                    "impacto": "alto", "snippet": obtener_snippet(archivo, linea_num)
+                })
+    return {"detalles": detalles, "conteo": len(dodgy)}
+
+
+# --- Generación de Reportes ---
+def guardar_reporte_txt(archivo, analisis, salida_consolidada):
+    nombre_reporte = f"reporte_{os.path.basename(archivo)}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    ruta_reporte = os.path.join(REPORT_TXT_DIR, nombre_reporte)
+    
+    def escribir_seccion(f, titulo, items):
+        f.write(f"\\n--- {titulo.upper()} ({len(items)}) ---\\n")
+        if not items:
+            f.write("✅ ¡Excelente! No se encontraron problemas en esta categoría.\\n")
+            return
+        for item in items:
+            f.write("\\n")
+            linea_info = f" • Línea {item.get('linea', 'N/A')}: [{item.get('codigo', 'GENERAL')}] {item.get('descripcion', 'Sin descripción.')}"
+            if 'severity' in item:
+                linea_info += f" (Severidad: {item.get('severity', 'N/A')})"
+            f.write(linea_info + "\\n")
+            
+            if item.get('explicacion'):
+                f.write(f"      Explicación: {item.get('explicacion')}\\n")
+            if item.get('sugerencia_simple'):
+                f.write(f"      Sugerencia: {item.get('sugerencia_simple')}\\n")
+
+            if item.get('snippet'):
+                f.write("      Contexto del Código:\\n")
+                for line in item['snippet']:
+                    f.write(f"         {line}\\n")
+
+    with open(ruta_reporte, "w", encoding="utf-8") as f:
+        f.write("════════════════════════════════════════════════════════════\\n")
+        f.write(f"📄 Informe Detallado GRIN Mirror v4.1.0\\n")
+        f.write("════════════════════════════════════════════════════════════\\n")
+        f.write(f"Archivo Analizado: {os.path.basename(archivo)}\\n")
+        f.write(f"Fecha de Análisis: {salida_consolidada['fecha']}\\n")
+        f.write(f"Hash (SHA256): {salida_consolidada['hash']}\\n")
+        f.write(f"Líneas de Código: {salida_consolidada['lineas']}\\n")
+        f.write("────────────────────────────────────────────────────────────\\n\\n")
+
+        f.write("📊 RESUMEN EJECUTIVO\\n")
+        f.write("───────────────────\\n")
+        f.write(f" • Puntaje Global de Calidad: {salida_consolidada['puntaje_global']}/100\\n")
+        f.write(f" • Índice de Mantenibilidad (Radon): {round(analisis['radon']['mantenibilidad'], 2)}/100\\n")
+        f.write(f" • Complejidad Ciclomática Máx (Radon): {analisis['radon']['complejidad']}\\n")
+        f.write(f" • Problemas Críticos de Seguridad (Bandit): {analisis['bandit']['conteo']}\\n")
+        f.write(f" • Secretos/Código Sospechoso (Dodgy): {analisis['dodgy']['conteo']}\\n")
+        f.write(f" • Errores de Tipado (Mypy): {analisis['mypy']['conteo']}\\n")
+        f.write("────────────────────────────────────────────────────────────\\n\\n")
+
+        f.write("🚨 ANÁLISIS DETALLADO DE HALLAZGOS\\n")
+        f.write("======================================\\n")
+        
+        escribir_seccion(f, "Seguridad (Bandit)", analisis['bandit']['detalles'])
+        escribir_seccion(f, "Código Sospechoso (Dodgy)", analisis['dodgy']['detalles'])
+        escribir_seccion(f, "Tipado Estático (Mypy)", analisis['mypy']['detalles'])
+        escribir_seccion(f, "Convenciones y Calidad (Pylint)", analisis['pylint']['detalles'])
+        escribir_seccion(f, "Estilo de Código (Flake8)", analisis['flake8']['detalles'])
+        escribir_seccion(f, "Formato de Código (Black)", analisis['black']['detalles'])
+        escribir_seccion(f, "Orden de Imports (isort)", analisis['isort']['detalles'])
+        escribir_seccion(f, "Código Muerto/Inutilizado (Vulture)", analisis['vulture']['detalles'])
+
+        f.write("\\n\\n════════════════════════════════════════════════════════════\\n")
+        f.write("⚙️ LOGS DE EJECUCIÓN (Consola)\\n")
+        f.write("════════════════════════════════════════════════════════════\\n")
+        f.write("\\n".join(LOG_BUFFER.getvalue().splitlines()))
+        f.write("\\n\\n--- FIN DEL INFORME ---")
+
+    logger.info(f"📄 Informe TXT detallado generado en: {ruta_reporte}")
+
+# --- Orquestación y Consolidación ---
+def consolidar_analisis(archivo, analisis, modo="normal"):
+    score_flake8 = analisis["flake8"]["score"]
+    score_mypy = max(0, 100 - analisis["mypy"]["conteo"] * 10)
+    score_bandit = max(0, 100 - analisis["bandit"]["conteo"] * 25)
+    score_radon_cc = max(0, 100 - analisis["radon"]["complejidad"] * 5)
+    score_radon_mi = analisis["radon"]["mantenibilidad"]
+    score_pylint = max(0, 100 - analisis["pylint"]["conteo"] * 2)
+    score_isort = 100 if analisis["isort"]["conteo"] == 0 else 70
+    score_black = 100 if analisis["black"]["conteo"] == 0 else 70
+    score_dodgy = max(0, 100 - analisis["dodgy"]["conteo"] * 30)
+
+    puntaje = (
+        score_flake8 * 0.10 + score_mypy * 0.15 + score_bandit * 0.20 +
+        score_radon_cc * 0.05 + score_radon_mi * 0.10 + score_pylint * 0.10 +
+        score_isort * 0.05 + score_black * 0.05 + score_dodgy * 0.20
+    )
+
+    if modo == "strict": puntaje *= 0.90
+    elif modo == "permissive": puntaje = min(100, puntaje * 1.05)
+
+    salida_consolidada = {
+        "archivo": archivo, "fecha": datetime.now().isoformat(),
+        "hash": calcular_hash_sha256(archivo), "lineas": len(leer_lineas(archivo)),
+        "puntaje_global": round(puntaje, 2), "analisis": analisis
+    }
+
+    path_json = os.path.join(ANALYSIS_DIR, f"consolidado_{os.path.basename(archivo)}.json")
+    with open(path_json, "w", encoding="utf-8") as f:
+        json.dump(salida_consolidada, f, indent=4, ensure_ascii=False)
+    
+    guardar_reporte_txt(archivo, analisis, salida_consolidada)
+    return salida_consolidada
+
+def analizar_archivo(archivo, modo="normal"):
+    logger.info(f"\\n════════════════════════════════════════\\nAnalizando: {os.path.basename(archivo)}\\n════════════════════════════════════════")
+    LOG_BUFFER.truncate(0)
+    LOG_BUFFER.seek(0)
+    
+    analisis = {
+        "flake8": analizar_flake8(archivo), "mypy": analizar_mypy(archivo),
+        "bandit": analizar_bandit(archivo), "radon": analizar_radon(archivo),
+        "pylint": analizar_pylint(archivo), "vulture": analizar_vulture(archivo),
+        "isort": analizar_isort(archivo), "black": analizar_black(archivo),
+        "dodgy": analizar_dodgy(archivo)
+    }
+    
+    return consolidar_analisis(archivo, analisis, modo)
+
+# --- Punto de Entrada Principal ---
+def main():
+    parser = argparse.ArgumentParser(description="GRIN Mirror v4.1.0 - Herramienta de Análisis Estático de Código Python.")
+    parser.add_argument("archivo", nargs="?", default=None, help="Ruta al archivo .py a analizar. Si se omite, analiza todos los .py del directorio actual.")
+    parser.add_argument("--strict", action="store_true", help="Aplica un modo de puntuación más estricto.")
+    parser.add_argument("--permissive", action="store_true", help="Aplica un modo de puntuación más permisivo.")
+    args = parser.parse_args()
+    
+    modo = "normal"
+    if args.strict: modo = "strict"
+    elif args.permissive: modo = "permissive"
+
+    if args.archivo:
+        if not os.path.isfile(args.archivo):
+            print(f"Error: La ruta '{args.archivo}' no es un archivo válido.", file=sys.stderr)
+            sys.exit(1)
+        if not args.archivo.endswith(".py"):
+            print(f"Error: El archivo '{args.archivo}' no es un archivo Python (.py).", file=sys.stderr)
+            sys.exit(1)
+        
+        r = analizar_archivo(args.archivo, modo)
+        print("\\n--- SALIDA JSON CONSOLIDADA ---")
+        print(json.dumps(r, indent=2, ensure_ascii=False))
+        
+        a = r['analisis']
+        print("\\n====== RESUMEN FINAL ======")
+        print(f"Archivo: {os.path.basename(r['archivo'])}")
+        print(f"Puntaje Global: {r['puntaje_global']}")
+        print(f"Seguridad (Bandit): {a['bandit']['conteo']} | Secretos (Dodgy): {a['dodgy']['conteo']}")
+        print(f"Tipado (Mypy): {a['mypy']['conteo']}")
+        print(f"Calidad (Pylint): {a['pylint']['conteo']} | Estilo (Flake8): {a['flake8']['conteo']}")
+        print(f"Formato (Black): {a['black']['conteo']} | Imports (isort): {a['isort']['conteo']}")
+        print(f"Complejidad: CC={a['radon']['complejidad']}, MI={round(a['radon']['mantenibilidad'], 2)}")
+        print(f"Código Muerto (Vulture): {a['vulture']['conteo']}")
+    else:
+        archivos_py = [f for f in os.listdir(BASE_DIR) if f.endswith(".py") and os.path.isfile(os.path.join(BASE_DIR, f))]
+        if not archivos_py:
+            print("No se encontraron archivos .py en el directorio actual para analizar.")
+            return
+            
+        print(f"Iniciando análisis de {len(archivos_py)} archivos Python en el directorio...")
+        resultados = []
+        for archivo in tqdm(archivos_py, desc="Analizando archivos", unit="file"):
+            resultado = analizar_archivo(os.path.join(BASE_DIR, archivo), modo)
+            resultados.append(resultado)
+        
+        print("\\n====== RESUMEN DE TODOS LOS ANÁLISIS ======")
+        for r in resultados:
+            a = r['analisis']
+            print(f" • {os.path.basename(r['archivo'])} → Puntaje: {r['puntaje_global']} | Seguridad: {a['bandit']['conteo']} | Tipado: {a['mypy']['conteo']}")
+
+if __name__ == "__main__":
+    main()
+`,
+        'bandit.yaml': `exclude_dirs: ["tests", "docs", "venv", "__pycache__"]
+
+severity: ["LOW", "MEDIUM", "HIGH"]
+confidence: ["LOW", "MEDIUM", "HIGH"]
+
+profiles:
+  strict:
+    include:
+      - B101  # asserts
+      - B102  # exec
+      - B301  # pickle
+      - B303  # insecure md5
+      - B403  # blacklist
+      - B404  # os.system
+      - B602  # subprocess shell=True
+      - B603  # subprocess untrusted input
+      - B609  # linux command injection
+      - B610  # start process with env
+`,
+        'mypy.ini': `[mypy]
+python_version = 3.12
+disallow_untyped_calls = True
+disallow_untyped_defs = True
+disallow_incomplete_defs = True
+check_untyped_defs = True
+warn_return_any = True
+warn_unreachable = True
+warn_unused_configs = True
+warn_unused_ignores = True
+warn_no_return = True
+strict_equality = True
+strict_optional = True
+show_error_codes = True
+pretty = True
+
+[mypy-tests.*]
+ignore_errors = True
+`,
+        'setup.cfg': `[flake8]
+max-line-length = 120
+ignore = E203,W503
+exclude = .git,__pycache__,venv,*.egg,tests
+select = B,B9,C,E,F,W,T4
+enable-extensions = G
+statistics = True
+count = True
+
+[radon]
+cc_min = B
+mi_min = C
+show_complexity = True
+`,
+        'py.pylintrc': `[MASTER]
+ignore=tests,venv
+disable=C0114,C0115,C0116
+
+[MESSAGES CONTROL]
+enable=all
+disable=invalid-name,too-few-public-methods
+
+[REPORTS]
+output-format=json
+score=yes
+
+[DESIGN]
+max-args=5
+max-branches=12
+max-locals=15
+max-returns=6
+max-statements=50
+`
+      };
+
+      // Agregar todos los archivos al ZIP
+      for (const [filename, content] of Object.entries(files)) {
+        zip.file(filename, content);
+      }
+
+      // Agregar README
+      const readme = `Blu&Grin — Demo (README)
+
+Contenido: grin_mirror2.py, bandit.yaml, mypy.ini, setup.cfg, py.pylintrc
+
+PASOS:
+1) Crear venv
+2) Activar
+3) pip install ...
+4) python grin_mirror2.py
+
+Contacto: blumasgrin@gmail.com
+Alias Lemon: agus.colo23
+
+Para acceder a versiones Pro, enviá comprobante a blumasgrin@gmail.com`;
+      zip.file('README.txt', readme);
+
+      // Generar y descargar
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'BluGrin_Demo.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      incDl();
+    }
+
+    // modal control
+    function openProModal() {
+      document.getElementById('modal').style.display = 'flex';
+      document.getElementById('modal-note').innerText = '';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    function submitProof() {
+      const name = document.getElementById('pname').value.trim();
+      const email = document.getElementById('pemail').value.trim();
+      const file = document.getElementById('pproof').files[0];
+
+      if (!name || !email || !file) {
+        document.getElementById('modal-note').innerText = 'Completá nombre, correo y adjuntá el comprobante.';
+        return;
+      }
+
+      // simulate upload: store proof metadata in localStorage (not the file)
+      const proofs = JSON.parse(localStorage.getItem('bg_proofs') || '[]');
+      proofs.push({ name, email, filename: file.name, date: new Date().toISOString() });
+      localStorage.setItem('bg_proofs', JSON.stringify(proofs));
+
+      incPro();
+      document.getElementById('modal-note').innerText = 'Comprobante registrado localmente. Enviá el comprobante por correo a blumasgrin@gmail.com para recibir el acceso.';
+      setTimeout(() => { closeModal(); }, 1800);
+    }
+
+    // year
+    document.getElementById('year').innerText = new Date().getFullYear();
+  </script>
+</body>
+</html>
